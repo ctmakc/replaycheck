@@ -13,6 +13,8 @@ And it **sells** each replay run over x402: `POST /v1/replay` costs 0.05 USDC, p
 
 Built for the Loops House × Celo **Agents on Open Rails** hackathon, track **Build with buy**.
 
+**Live:** https://replaycheck.mmix.biz (free sandbox runs from the page) · **Demo video:** https://replaycheck.mmix.biz/demo.mp4 (87 s)
+
 ## Why
 
 Small teams that ship AI features change prompts, models and UI every week. A change that looks fine in review can break sign-in or checkout, and they hear about it from users. A test fleet on a monthly contract is too much overhead for a two-person team. ReplayCheck charges per run, a few cents, and needs nothing installed on the customer side.

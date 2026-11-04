@@ -17,7 +17,7 @@ const MAX_TASKS = 3, MAX_STEPS = 12;
 // Free demo runs (Celo Sepolia only): one at a time, at most DEMO_PER_HOUR per hour.
 const DEMO_PER_HOUR = Number(process.env.REPLAYCHECK_DEMO_PER_HOUR || 30);
 let demoBusy = false; const demoTimes = [];
-const STATIC = { '/': ['public/index.html', 'text/html; charset=utf-8'], '/logo.png': ['public/logo.png', 'image/png'], '/mmix-logo.png': ['public/mmix-logo.png', 'image/png'] };
+const STATIC = { '/': ['public/index.html', 'text/html; charset=utf-8'], '/logo.png': ['public/logo.png', 'image/png'], '/mmix-logo.png': ['public/mmix-logo.png', 'image/png'], '/demo.mp4': ['public/demo.mp4', 'video/mp4'] };
 
 async function readBody(req) { let raw = ''; for await (const c of req) { raw += c; if (raw.length > 64 * 1024) break; } return raw; }
 
