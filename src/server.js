@@ -12,6 +12,9 @@ import { agentAccount } from './wallet.js';
 import { network, ATTRIBUTION_CODE } from './config.js';
 
 const PORT = Number(process.env.PORT || 8742);
+if (!process.env.REPLAYCHECK_AGENT_ID && network().slug === 'celo' && existsSync('reports/mainnet-state.json')) {
+  try { const st = JSON.parse(readFileSync('reports/mainnet-state.json', 'utf8')); if (st.agentId) process.env.REPLAYCHECK_AGENT_ID = String(st.agentId); } catch {}
+}
 const PUBLIC_BASE = process.env.REPLAYCHECK_PUBLIC_BASE || `http://127.0.0.1:${PORT}`;
 const MAX_TASKS = 3, MAX_STEPS = 12;
 // Free demo runs (Celo Sepolia only): one at a time, at most DEMO_PER_HOUR per hour.

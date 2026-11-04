@@ -15,7 +15,7 @@ rateLimit:
 services:
   replaycheck:
     mode: proxy
-    upstream: http://127.0.0.1:8742
+    upstream: http://127.0.0.1:8762
     timeoutMs: 600000
     forwardHeaders: [content-type, accept]
 endpoints:
