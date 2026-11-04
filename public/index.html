@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReplayCheck</title>
+<meta name="description" content="ReplayCheck replays your users' key flows in a rented browser after every release and pays per call in USDC on Celo over x402.">
+<link rel="icon" href="/logo.png">
+<meta property="og:title" content="ReplayCheck">
+<meta property="og:description" content="Replays your users' key flows after every release. Buys browsers and inference per call on Celo.">
+<meta property="og:image" content="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=Red+Hat+Display:wght@300;500;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#121410; --night-2:#1B1E17; --rule:#2C3025; --text:#E6E2D3; --mute:#9A9C8C;
+  --paper:#ECE7D9; --ink:#22241C; --ink-mute:#5E5F52;
+  --sodium:#FFC93C; --pass:#6FD08C; --fail:#FF6B57; --pass-ink:#1F6B39; --fail-ink:#A3301F;
+  --disp:"Red Hat Display",ui-sans-serif,sans-serif; --mono:"Azeret Mono",ui-monospace,monospace;
+  --ease-out:cubic-bezier(.16,1,.3,1); --ease-in:cubic-bezier(.7,0,.84,0);
+  --r:3px;
+}
+*{box-sizing:border-box}
+html{background:var(--night);color:var(--text)}
+body{margin:0;font:400 16px/1.55 var(--disp);background:var(--night);min-height:100vh}
+a{color:var(--sodium);text-underline-offset:3px}
+a:hover{color:var(--paper)}
+code,pre,.mono{font-family:var(--mono)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:center;gap:10px;font:800 18px/1 var(--disp);letter-spacing:-.01em;color:var(--text);text-decoration:none}
+.brand img{width:28px;height:28px}
+.top nav{display:flex;gap:20px;font:500 13px/1 var(--mono)}
+.top nav a{color:var(--mute);text-decoration:none}
+.top nav a:hover{color:var(--sodium)}
+.grid{display:grid;grid-template-columns:5fr 7fr;gap:56px;padding:48px 0 96px;align-items:start}
+h1{font:800 clamp(36px,6.4vw,92px)/.98 var(--disp);letter-spacing:-.04em;margin:0;padding:64px 0 0;max-width:15ch}
+@media (min-width:901px){h1{max-width:none}}
+h1 .line{display:block;overflow:hidden;padding-bottom:.06em}
+h1 .line>span{display:block}
+h1 em{font-style:normal;font-weight:300;color:var(--sodium)}
+.lede{font:300 19px/1.55 var(--disp);color:var(--text);max-width:34em;margin:0 0 28px}
+.ledger{border-top:1px solid var(--rule);margin:0;padding:0;list-style:none}
+.ledger li{display:grid;grid-template-columns:7.5em 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule);font-size:15px;align-items:baseline}
+.ledger .k{font:500 12px/1.4 var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.ledger .v{font:500 13px/1.4 var(--mono);color:var(--sodium);white-space:nowrap}
+.ids{margin-top:28px;font:400 12.5px/1.8 var(--mono);color:var(--mute);overflow-wrap:anywhere}
+.ids b{color:var(--text);font-weight:500}
+/* console */
+.console{background:var(--night-2);border:1px solid var(--rule);border-radius:var(--r);padding:22px;position:relative}
+.console h2{font:800 20px/1.2 var(--disp);letter-spacing:-.01em;margin:0 0 4px}
+.console .sub{color:var(--mute);font-size:14px;margin:0 0 18px}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.presets button{font:500 12.5px/1 var(--mono);background:transparent;color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:border-color .18s,color .18s}
+.presets button[aria-pressed=true]{border-color:var(--sodium);color:var(--sodium)}
+.presets button:hover{border-color:var(--mute)}
+label{display:block;font:500 11.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--mute);margin:14px 0 6px}
+input,textarea{width:100%;background:var(--night);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:11px 12px;font:400 13px/1.5 var(--mono)}
+input:focus,textarea:focus{outline:2px solid var(--sodium);outline-offset:1px;border-color:transparent}
+textarea{min-height:132px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.go{margin-top:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.go button{font:800 15px/1 var(--disp);background:var(--sodium);color:var(--ink);border:0;border-radius:var(--r);padding:15px 22px;cursor:pointer;transition:transform .16s var(--ease-out),background .16s}
+.go button:hover{transform:translateY(-1px);background:#FFD566}
+.go button:active{transform:translateY(1px)}
+.go button[disabled]{opacity:.55;cursor:progress}
+.go .note{font:400 12.5px/1.5 var(--mono);color:var(--mute)}
+/* receipt */
+.slot{height:10px;margin:26px -6px 0;background:#090A08;border-radius:5px;box-shadow:inset 0 2px 4px #000}
+.tape{overflow:hidden;margin:0 10px}
+.receipt{background:var(--paper);color:var(--ink);font:400 12.5px/1.6 var(--mono);padding:18px 18px 26px;
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 8px) no-repeat,radial-gradient(circle 6px at 8px 100%,transparent 6px,#000 6.5px) bottom/16px 8px repeat-x;
+          mask:linear-gradient(#000 0 0) top/100% calc(100% - 8px) no-repeat,radial-gradient(circle 6px at 8px 100%,transparent 6px,#000 6.5px) bottom/16px 8px repeat-x}
+.receipt.feed{animation:feed .7s var(--ease-out) both}
+@keyframes feed{from{transform:translateY(-100%)}to{transform:none}}
+.receipt .ln{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.receipt .ln>span:last-child{text-align:right}
+.receipt .hd{font-weight:700;text-align:center;letter-spacing:.12em;display:block}
+.receipt .cut{border-top:1px dashed var(--ink-mute);margin:10px 0}
+.receipt .mut{color:var(--ink-mute)}
+.receipt .p{color:var(--pass-ink);font-weight:700}.receipt .f{color:var(--fail-ink);font-weight:700}
+.receipt a{color:var(--ink)}
+.receipt .print{opacity:0;transform:translateY(-3px)}
+.receipt .print.on{opacity:1;transform:none;transition:opacity .22s var(--ease-out),transform .22s var(--ease-out)}
+.receipt .shots{display:flex;gap:8px;margin:8px 0}
+.receipt .shots img{width:50%;border:1px solid #CFC9B7;filter:grayscale(.3) contrast(1.05)}
+.receipt.idle{color:var(--ink-mute);text-align:center}
+.spinner{display:inline-block;animation:blink 1s steps(2) infinite}@keyframes blink{50%{opacity:0}}
+/* x402 */
+.paywith{border-top:1px solid var(--rule);padding:56px 0 72px;display:grid;grid-template-columns:5fr 7fr;gap:56px}
+.paywith h2{font:800 30px/1.05 var(--disp);letter-spacing:-.025em;margin:0 0 14px}
+.paywith p{color:var(--mute);margin:0 0 12px;max-width:34em}
+pre{background:var(--night-2);border:1px solid var(--rule);border-radius:var(--r);padding:16px;overflow:auto;font-size:12.5px;line-height:1.6;color:var(--text);margin:0}
+pre .c{color:var(--mute)}
+footer{border-top:1px solid var(--rule);padding:22px 0 30px;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;font:400 12.5px/1.5 var(--mono);color:var(--mute)}
+.credit{display:inline-flex;align-items:center;gap:10px;color:var(--mute);text-decoration:none}
+.credit img{height:36px;width:auto;background:rgba(255,255,255,.9);border-radius:4px;padding:3px 6px}
+.reveal{opacity:0;transform:translateY(14px)}
+.reveal.in{opacity:1;transform:none;transition:opacity .6s var(--ease-out),transform .6s var(--ease-out)}
+@media (max-width:900px){
+  .grid,.paywith{grid-template-columns:1fr;gap:36px}
+  .grid{padding:32px 0 64px}
+  h1{padding-top:40px}
+  .lede{font-size:17px}
+  .top nav{gap:14px}
+}
+@media (max-width:520px){
+  .wrap{padding:0 16px}
+  .row2{grid-template-columns:1fr}
+  .ledger li{grid-template-columns:1fr auto}
+  .ledger .k{grid-column:1/-1}
+  .top nav a.hide-s{display:none}
+  .console{padding:16px}
+  h1 .line,h1 .line>span{display:inline}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal,.receipt .print,h1 .line>span{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/"><img src="/logo.png" alt="" width="28" height="28">ReplayCheck</a>
+    <nav>
+      <a href="#try">Try it</a>
+      <a href="#x402">Pay per run</a>
+      <a class="hide-s" href="https://github.com/ctmakc/replaycheck">GitHub</a>
+    </nav>
+  </header>
+
+  <h1>
+    <span class="line"><span>Replay your users' flows</span></span>
+    <span class="line"><span>after every release.</span></span>
+    <span class="line"><span><em>Pay per call, on Celo.</em></span></span>
+  </h1>
+  <main class="grid">
+    <section>
+      <p class="lede reveal">Sign-in, checkout, the assistant chat: ReplayCheck walks through them in a real browser and tells you which ones broke, with screenshots. It owns no browsers and no model. It buys both per call over x402, in USDC on Celo.</p>
+      <ul class="ledger reveal">
+        <li><span class="k">buys</span><span>Chrome session, 1–10 min, buy gateway</span><span class="v">$0.0036–0.009</span></li>
+        <li><span class="k">buys</span><span>plain-language check, Cencori</span><span class="v">$0.01</span></li>
+        <li><span class="k">sells</span><span>one replay run, up to 3 tasks</span><span class="v">0.05 USDC</span></li>
+      </ul>
+      <div class="ids reveal" id="ids">
+        agent wallet <b>0x7Fd33c597ACd183c3AD9006C1FE8e337609cFCd3</b><br>
+        ERC-8004 <b id="agentid">—</b><br>attribution tag <b>celo_2784cb800c0a</b>
+      </div>
+    </section>
+
+    <section id="try" class="console reveal">
+      <h2>Run a replay now</h2>
+      <p class="sub">Free on Celo Sepolia: the agent pays the buy gateway sandbox in test USDC and prints the receipt below.</p>
+      <div class="presets" role="group" aria-label="Example tasks">
+        <button type="button" data-p="login" aria-pressed="true">Sign-in works</button>
+        <button type="button" data-p="badpass">Wrong password is explained</button>
+        <button type="button" data-p="checkbox">Checkbox toggles</button>
+      </div>
+      <form id="f">
+        <div class="row2">
+          <div><label for="name">Task name</label><input id="name" required maxlength="200"></div>
+          <div><label for="url">Start URL (https)</label><input id="url" type="url" required pattern="https://.*"></div>
+        </div>
+        <label for="steps">Steps (JSON)</label>
+        <textarea id="steps" spellcheck="false" required></textarea>
+        <label for="expect">Checks (JSON)</label>
+        <textarea id="expect" spellcheck="false" required style="min-height:104px"></textarea>
+        <div class="go">
+          <button id="run" type="submit">Replay it</button>
+          <span class="note" id="note">about 20–40 s · one rented browser</span>
+        </div>
+      </form>
+      <div class="slot" aria-hidden="true"></div>
+      <div class="tape"><div class="receipt idle" id="receipt" aria-live="polite">The receipt prints here.</div></div>
+    </section>
+  </main>
+
+  <section class="paywith reveal" id="x402">
+    <div>
+      <h2>Pay per run from your own wallet</h2>
+      <p><code>POST /v1/replay</code> answers HTTP 402 with a price of 0.05 USDC to the agent wallet. Any x402 client signs the payment and retries; Celo's x402 facilitator settles it. Your run then buys its own browser session and checks, and the response lists each of those payments.</p>
+      <p>Limits: 3 tasks, 12 steps and 4 checks per task, https start URLs.</p>
+    </div>
+    <pre><span class="c"># tasks.json holds {"tasks":[ ... ]} in the format of the form above</span>
+npx @celo/buy curl --max-amount 0.06 \
+  -X POST -H 'content-type: application/json' \
+  --data-file tasks.json \
+  <span id="endpoint">https://replaycheck.mmix.biz</span>/v1/replay
+
+<span class="c"># test first on Celo Sepolia with free sandbox USDC</span>
+npx @celo/buy --sandbox curl ...</pre>
+  </section>
+
+  <footer>
+    <span>ReplayCheck · INNOVA CONSULT LTD. · Agents on Open Rails 2026 · <a href="https://github.com/ctmakc/replaycheck">source</a></span>
+    <a class="credit" href="https://mmix.ua/" rel="noopener">Development &amp; promotion — <img src="/mmix-logo.png" alt="MMIX — Marketing Mix" height="36"></a>
+  </footer>
+</div>
+
+<script>
+const PRESETS = {
+  login: { name: 'Sign in with valid credentials reaches the secure area', url: 'https://the-internet.herokuapp.com/login',
+    steps: [{action:'fill',target:'#username',text:'tomsmith'},{action:'fill',target:'#password',text:'SuperSecretPassword!'},{action:'click',target:'button[type=submit]'},{action:'wait',target:'#flash'}],
+    expect: [{urlContains:'/secure'},{textContains:'You logged into a secure area'}] },
+  badpass: { name: 'A wrong password is rejected with a clear message', url: 'https://the-internet.herokuapp.com/login',
+    steps: [{action:'fill',target:'#username',text:'tomsmith'},{action:'fill',target:'#password',text:'wrong-password'},{action:'click',target:'button[type=submit]'},{action:'wait',target:'#flash'}],
+    expect: [{textContains:'Your password is invalid'},{urlContains:'/login'}] },
+  checkbox: { name: 'The first checkbox can be ticked', url: 'https://the-internet.herokuapp.com/checkboxes',
+    steps: [{action:'check',target:'#checkboxes input:nth-of-type(1)'}],
+    expect: [{titleContains:'The Internet'},{textContains:'Checkboxes'}] },
+};
+const $ = (s) => document.querySelector(s);
+function load(k){ const p=PRESETS[k]; $('#name').value=p.name; $('#url').value=p.url; const fmt=(a)=>'[\n'+a.map(o=>'  '+JSON.stringify(o)).join(',\n')+'\n]'; $('#steps').value=fmt(p.steps); $('#expect').value=fmt(p.expect);
+  document.querySelectorAll('.presets button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.p===k))); }
+document.querySelectorAll('.presets button').forEach(b=>b.addEventListener('click',()=>load(b.dataset.p)));
+load('login');
+
+fetch('/v1/health').then(r=>r.json()).then(h=>{ if(h.agentId) $('#agentid').textContent = `#${h.agentId} on ${h.network}`; }).catch(()=>{});
+$('#endpoint').textContent = location.origin.startsWith('http') && !location.hostname.includes('127.0.0.1') ? location.origin : 'https://replaycheck.mmix.biz';
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function printReceipt(html){
+  const r = $('#receipt'); r.className = 'receipt'; r.innerHTML = html;
+  if (reduce) { r.querySelectorAll('.print').forEach(e=>e.classList.add('on')); return; }
+  void r.offsetWidth; r.classList.add('feed');
+  r.querySelectorAll('.print').forEach((e,i)=>setTimeout(()=>e.classList.add('on'), 420 + i*90));
+}
+
+$('#f').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  let steps, expect;
+  try { steps = JSON.parse($('#steps').value); expect = JSON.parse($('#expect').value); }
+  catch { $('#note').textContent = 'Steps and checks must be valid JSON.'; return; }
+  const task = { id: 'demo', name: $('#name').value, startUrl: $('#url').value, steps, expect };
+  $('#run').disabled = true; $('#note').innerHTML = 'renting a browser <span class="spinner">▍</span>';
+  const r = $('#receipt'); r.className = 'receipt idle'; r.innerHTML = 'paying the buy gateway, driving the browser <span class="spinner">▍</span>';
+  const t0 = Date.now();
+  try {
+    const res = await fetch('/demo/run', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ tasks:[task] }) });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || ('HTTP '+res.status));
+    const t = j.results[0]; const sec = ((Date.now()-t0)/1000).toFixed(1);
+    const L = (a,b,cls='') => `<div class="ln print ${cls}"><span>${a}</span><span>${b}</span></div>`;
+    let h = `<span class="hd print">REPLAYCHECK</span><div class="mut print" style="text-align:center">${esc(j.network)} · ${esc(new Date().toISOString().slice(0,19).replace('T',' '))} UTC</div><div class="cut print"></div>`;
+    h += L('RUN', esc(j.runId.slice(-6)));
+    h += L(esc(t.name).slice(0,60), t.status==='pass' ? '<span class="p">PASS</span>' : `<span class="f">${esc(t.status.toUpperCase())}</span>`);
+    for (const c of t.checks||[]) h += L(`&nbsp;&nbsp;${c.pass?'✓':'✗'} ${esc(c.type)}: ${esc(String(c.value).slice(0,46))}`, '', c.pass?'':'f');
+    if (t.error) h += `<div class="ln print f"><span>${esc(t.error).slice(0,160)}</span></div>`;
+    if (t.screenshots?.length) h += `<div class="shots print">${t.screenshots.map(s=>`<a href="${esc(j.reportBase)}/${esc(t.id)}/${esc(s)}"><img alt="screenshot ${esc(s)}" src="${esc(j.reportBase)}/${esc(t.id)}/${esc(s)}"></a>`).join('')}</div>`;
+    h += `<div class="cut print"></div>`;
+    let total = 0;
+    for (const p of j.upstreamPaidCalls||[]) { total += p.usd; h += L(`${esc(p.capability||p.provider)}<br><a href="${esc(p.explorer)}">${esc((p.txHash||'').slice(0,18))}…</a>`, `$${p.usd.toFixed(6)}`); }
+    h += `<div class="cut print"></div>` + L('<b>PAID BY AGENT</b>', `<b>$${total.toFixed(6)}</b>`) + L('time', `${sec} s`, 'mut');
+    h += `<div class="ln print"><span><a href="${esc(j.report)}">full report →</a></span><span class="mut">x402 · Celo</span></div>`;
+    printReceipt(h);
+    $('#note').textContent = 'done · try another preset or your own page';
+  } catch (e) {
+    printReceipt(`<span class="hd print">REPLAYCHECK</span><div class="cut print"></div><div class="ln print f"><span>${esc(e.message)}</span></div>`);
+    $('#note').textContent = 'run did not finish';
+  } finally { $('#run').disabled = false; }
+});
+
+// entrance: masked lines rise with an overlapping stagger, then the rest settles in on scroll
+if (!reduce) {
+  document.querySelectorAll('h1 .line>span').forEach((s,i)=>{ s.animate([{transform:'translateY(105%)'},{transform:'none'}],{duration:820,delay:80+i*110,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}); });
+  const io = new IntersectionObserver((es)=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transitionDelay = (i<3? 380+i*90 : 0)+'ms'; io.observe(el); });
+} else document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+</script>
+</body>
+</html>
