@@ -60,7 +60,7 @@ Steps use the buy browser command set: `open`, `fill`, `type`, `click`, `press`,
 
 - **Agent wallet:** `0x7Fd33c597ACd183c3AD9006C1FE8e337609cFCd3`, a key made for this agent only.
 - **ERC-8004 identity:** `npm run register` calls `register(agentURI)` on the IdentityRegistry (`0x8004A169…a432` on Celo mainnet, `0x8004A818…BD9e` on Celo Sepolia). The agent URI is `agent-registration.json` in this repo.
-- **ERC-8021 attribution:** the wallet client is built with `withAttribution([...])` from `@celo/attribution-tags`, so every transaction the agent sends carries the tag. The suffix holds the code the Loops House entry issued, `celo_17ee521cbfea`, plus the repo-derived `celo_2784cb800c0a`. `npm run register` decodes the suffix from its own transaction and reports whether the issued code is present.
+- **ERC-8021 attribution:** the wallet client is built with `withAttribution([...])` from `@celo/attribution-tags`, so every transaction the agent sends carries the tag. The suffix holds the code the Loops House entry issued, `celo_17ee521cbfea` (the same dataSuffix Loops shows for the entry). `npm run register` decodes the suffix from its own transaction and reports whether the issued code is present.
 - **Gas in stablecoins:** transactions set a CIP-64 `feeCurrency` (USDC adapter), so the wallet holds USDC only and never needs CELO. x402 settlements are gasless for the payer.
 - **Spending guards:** each paid call is capped (`REPLAYCHECK_MAX_CALL_ATOMIC`, default $0.02) and each process has a budget (`REPLAYCHECK_MAX_RUN_ATOMIC`, default $0.50). A paid call that fails with 5xx is never retried automatically, since the payment may already have settled.
 

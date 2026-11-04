@@ -4,11 +4,14 @@ import { codeFromRepo } from '@celo/attribution-tags';
 
 export const REPO = process.env.REPLAYCHECK_REPO || 'ctmakc/replaycheck';
 // ERC-8021 attribution. The Loops House entry issued celo_17ee521cbfea; it must be in every
-// mainnet transaction. The repo-derived code rides along in the same suffix (ERC-8021 carries
-// several codes), so both the hackathon leaderboard and our own analytics see the activity.
+// mainnet transaction. The suffix carries that code alone, byte-for-byte the dataSuffix Loops
+// shows for the entry, so the leaderboard matches it whichever way it reads the tag.
+// Set REPLAYCHECK_WITH_REPO_CODE=1 to add the repo-derived code as a second code.
 export const ASSIGNED_CODE = process.env.REPLAYCHECK_ATTRIBUTION_CODE || 'celo_17ee521cbfea';
 export const REPO_CODE = codeFromRepo(REPO);
-export const ATTRIBUTION_CODES = [...new Set([ASSIGNED_CODE, REPO_CODE])];
+export const ATTRIBUTION_CODES = process.env.REPLAYCHECK_WITH_REPO_CODE === '1'
+  ? [...new Set([ASSIGNED_CODE, REPO_CODE])]
+  : [ASSIGNED_CODE];
 export const ATTRIBUTION_CODE = ASSIGNED_CODE;
 
 export const GATEWAY = process.env.REPLAYCHECK_GATEWAY || 'https://gateway.usebuy.ai';
