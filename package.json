@@ -1,0 +1,31 @@
+{
+  "name": "replaycheck",
+  "version": "0.1.0",
+  "description": "Replays your users' key flows in rented browsers after every release and pays per run in stablecoins on Celo (x402 via buy).",
+  "type": "module",
+  "bin": {
+    "replaycheck": "bin/replaycheck.js"
+  },
+  "scripts": {
+    "whoami": "node bin/replaycheck.js whoami",
+    "demo": "node bin/replaycheck.js run tasks/demo.json",
+    "demo:sandbox": "REPLAYCHECK_NETWORK=celo-sepolia node bin/replaycheck.js run tasks/demo.json",
+    "register": "node scripts/register-agent.js",
+    "serve": "node src/server.js",
+    "x402-key": "node scripts/x402-api-key.js",
+    "gate": "buy gate paywall.yml --facilitator https://api.x402.celo.org",
+    "gate:sandbox": "buy --sandbox gate paywall.sandbox.yml --facilitator https://api.x402.sepolia.celo.org"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@celo/attribution-tags": "^0.5.0",
+    "@celo/buy-core": "0.8.5",
+    "viem": "^2.57.16"
+  },
+  "devDependencies": {
+    "@celo/buy": "0.8.5"
+  }
+}
