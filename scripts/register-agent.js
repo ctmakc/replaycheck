@@ -4,7 +4,7 @@
 // The transaction carries the ERC-8021 attribution suffix (withAttribution on the wallet client).
 import { parseAbi, parseEventLogs } from 'viem';
 import { fromDataSuffix } from '@celo/attribution-tags';
-import { network, ATTRIBUTION_CODE, REPO } from '../src/config.js';
+import { network, ATTRIBUTION_CODES, ASSIGNED_CODE, REPO } from '../src/config.js';
 import { walletClient, publicClient, agentAccount, balances } from '../src/wallet.js';
 
 const abi = parseAbi([
@@ -16,7 +16,10 @@ const abi = parseAbi([
 const n = network();
 const me = agentAccount().address;
 const agentURI = process.env.REPLAYCHECK_AGENT_URI || `https://raw.githubusercontent.com/${REPO}/main/agent-registration.json`;
-const feeToken = process.env.REPLAYCHECK_FEE_TOKEN || 'USDC';
+const bal = await balances(me, n);
+// Pay gas in whichever stablecoin the wallet holds (CIP-64); fall back to CELO if it holds CELO only.
+let feeToken = process.env.REPLAYCHECK_FEE_TOKEN;
+if (!feeToken) feeToken = Object.keys(n.feeCurrencies).find((t) => BigInt(bal[t] || '0') > 20000n) || (BigInt(bal.CELO) > 0n ? 'CELO' : 'USDC');
 const feeCurrency = n.feeCurrencies[feeToken];
 
 const pc = publicClient(n);
@@ -25,8 +28,8 @@ if (already > 0n && !process.argv.includes('--again')) {
   console.log(JSON.stringify({ note: 'agent wallet already owns an ERC-8004 identity on this network; pass --again to mint another', network: n.slug, owner: me, count: already.toString() }));
   process.exit(0);
 }
-console.error(`[register] ${n.slug} registry ${n.identityRegistry} owner ${me} uri ${agentURI} fee ${feeToken} ${feeCurrency} tag ${ATTRIBUTION_CODE}`);
-console.error('[register] balances', JSON.stringify(await balances(me, n)));
+console.error(`[register] ${n.slug} registry ${n.identityRegistry} owner ${me} uri ${agentURI} fee ${feeToken} ${feeCurrency} tags ${ATTRIBUTION_CODES.join(',')}`);
+console.error('[register] balances', JSON.stringify(bal));
 
 const wc = walletClient(n);
 const hash = await wc.writeContract({ address: n.identityRegistry, abi, functionName: 'register', args: [agentURI], ...(feeCurrency ? { feeCurrency } : {}) });
@@ -44,6 +47,7 @@ console.log(JSON.stringify({
   owner: me,
   agentURI,
   attributionOnChain: tag,
+  assignedCodePresent: !!tag?.codes?.includes(ASSIGNED_CODE),
   gasUsed: rcpt.gasUsed.toString(),
   feeCurrency: feeCurrency || 'CELO',
 }, null, 2));

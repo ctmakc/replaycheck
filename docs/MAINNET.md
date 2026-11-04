@@ -1,6 +1,6 @@
 # Celo mainnet activity
 
-Agent wallet `0x7Fd33c597ACd183c3AD9006C1FE8e337609cFCd3` · attribution code `celo_2784cb800c0a`
+Agent wallet `0x7Fd33c597ACd183c3AD9006C1FE8e337609cFCd3` · attribution codes `celo_17ee521cbfea` (issued by Loops House) + `celo_2784cb800c0a` (repo)
 
 | Date | What | Transaction |
 |---|---|---|

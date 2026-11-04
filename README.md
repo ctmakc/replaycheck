@@ -60,7 +60,7 @@ Steps use the buy browser command set: `open`, `fill`, `type`, `click`, `press`,
 
 - **Agent wallet:** `0x7Fd33c597ACd183c3AD9006C1FE8e337609cFCd3`, a key made for this agent only.
 - **ERC-8004 identity:** `npm run register` calls `register(agentURI)` on the IdentityRegistry (`0x8004A169…a432` on Celo mainnet, `0x8004A818…BD9e` on Celo Sepolia). The agent URI is `agent-registration.json` in this repo.
-- **ERC-8021 attribution:** the wallet client is built with `withAttribution(code)` from `@celo/attribution-tags`, so every transaction the agent sends carries the tag. The code defaults to `codeFromRepo("ctmakc/replaycheck")` = `celo_2784cb800c0a`; set `REPLAYCHECK_ATTRIBUTION_CODE` to the code the hackathon entry shows.
+- **ERC-8021 attribution:** the wallet client is built with `withAttribution([...])` from `@celo/attribution-tags`, so every transaction the agent sends carries the tag. The suffix holds the code the Loops House entry issued, `celo_17ee521cbfea`, plus the repo-derived `celo_2784cb800c0a`. `npm run register` decodes the suffix from its own transaction and reports whether the issued code is present.
 - **Gas in stablecoins:** transactions set a CIP-64 `feeCurrency` (USDC adapter), so the wallet holds USDC only and never needs CELO. x402 settlements are gasless for the payer.
 - **Spending guards:** each paid call is capped (`REPLAYCHECK_MAX_CALL_ATOMIC`, default $0.02) and each process has a budget (`REPLAYCHECK_MAX_RUN_ATOMIC`, default $0.50). A paid call that fails with 5xx is never retried automatically, since the payment may already have settled.
 
@@ -68,7 +68,7 @@ Steps use the buy browser command set: `open`, `fill`, `type`, `click`, `press`,
 
 | Step | Transaction |
 |---|---|
-| ERC-8004 `register` from the agent wallet, gas paid in USDC, tag `celo_2784cb800c0a` decoded on-chain, agentId 927 | [0x94b1dd8b…e40c](https://celo-sepolia.blockscout.com/tx/0x94b1dd8b96dcfd412753bf996d3715888c0b9906a52f2314b668c99cb413e40c) |
+| ERC-8004 `register` from the agent wallet, gas paid in USDC, tag decoded on-chain (repo code; this run predates the issued code), agentId 927 | [0x94b1dd8b…e40c](https://celo-sepolia.blockscout.com/tx/0x94b1dd8b96dcfd412753bf996d3715888c0b9906a52f2314b668c99cb413e40c) |
 | ReplayCheck buys a 2-minute browser session (`login-ok`) | [0x89f10873…1945](https://celo-sepolia.blockscout.com/tx/0x89f108735207dfd1808c9d1b4395c8dd65c0bb8a10bdaf5a5912aebdbe101945) |
 | ReplayCheck buys a 2-minute browser session (`login-regression`) | [0x5a353b08…92af](https://celo-sepolia.blockscout.com/tx/0x5a353b08655c2f031220e4826bbfe1e4f2f3da6829f984387be2eb226dc592af) |
 | A separate customer wallet pays ReplayCheck 0.05 USDC for a run through `buy gate` + Celo x402 facilitator | [0xaa3f4a95…0ddb](https://celo-sepolia.blockscout.com/tx/0xaa3f4a95f1a4bbd96d5d410c0f2714a07f87d47f45fc088dc0549569d0720ddb) |

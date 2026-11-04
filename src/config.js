@@ -3,9 +3,13 @@
 import { codeFromRepo } from '@celo/attribution-tags';
 
 export const REPO = process.env.REPLAYCHECK_REPO || 'ctmakc/replaycheck';
-// ERC-8021 attribution code. Loops House / Celo Builders derive it from the GitHub repo slug;
-// REPLAYCHECK_ATTRIBUTION_CODE overrides it with the code the hackathon entry shows.
-export const ATTRIBUTION_CODE = process.env.REPLAYCHECK_ATTRIBUTION_CODE || codeFromRepo(REPO);
+// ERC-8021 attribution. The Loops House entry issued celo_17ee521cbfea; it must be in every
+// mainnet transaction. The repo-derived code rides along in the same suffix (ERC-8021 carries
+// several codes), so both the hackathon leaderboard and our own analytics see the activity.
+export const ASSIGNED_CODE = process.env.REPLAYCHECK_ATTRIBUTION_CODE || 'celo_17ee521cbfea';
+export const REPO_CODE = codeFromRepo(REPO);
+export const ATTRIBUTION_CODES = [...new Set([ASSIGNED_CODE, REPO_CODE])];
+export const ATTRIBUTION_CODE = ASSIGNED_CODE;
 
 export const GATEWAY = process.env.REPLAYCHECK_GATEWAY || 'https://gateway.usebuy.ai';
 
@@ -21,6 +25,7 @@ export const NETWORKS = {
     feeCurrencies: {
       USDC: '0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B', // adapter for USDC 0xcebA...118C
       USDT: '0x0E2A3e05bc9A16F5292A6170456A710cb89C6f72',
+      USAT: '0x0357EE22278c922e1D36cFe6b899269b161880C4', // listed in FeeCurrencyDirectory as USAT
     },
     tokens: {
       USDC: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C',

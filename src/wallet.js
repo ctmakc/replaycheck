@@ -2,7 +2,7 @@ import { createPublicClient, createWalletClient, http, erc20Abi } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { celo, celoSepolia } from 'viem/chains';
 import { withAttribution } from '@celo/attribution-tags';
-import { network, ATTRIBUTION_CODE } from './config.js';
+import { network, ATTRIBUTION_CODES } from './config.js';
 
 export function agentAccount() {
   const key = process.env.REPLAYCHECK_AGENT_PRIVATE_KEY;
@@ -24,7 +24,7 @@ export function walletClient(n = network()) {
     account: agentAccount(),
     chain: chainFor(n),
     transport: http(n.rpc),
-  }).extend(withAttribution(ATTRIBUTION_CODE));
+  }).extend(withAttribution(ATTRIBUTION_CODES));
 }
 
 export async function balances(address, n = network()) {
