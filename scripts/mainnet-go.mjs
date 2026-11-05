@@ -7,12 +7,20 @@ import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs
 import { execFileSync } from 'node:child_process';
 import { agentAccount, balances } from '../src/wallet.js';
 import { NETWORKS } from '../src/config.js';
+import { swapCeloIfFunded } from './swap-celo.mjs';
 
 process.env.REPLAYCHECK_NETWORK = 'celo';
 const STATE = process.env.REPLAYCHECK_STATE || 'reports/mainnet-state.json';
 const st = existsSync(STATE) ? JSON.parse(readFileSync(STATE, 'utf8')) : {};
 const me = agentAccount().address;
-const bal = await balances(me, NETWORKS.celo);
+let bal = await balances(me, NETWORKS.celo);
+const stableOf = (b) => ['USDC', 'USDT', 'USAT'].reduce((a, t) => a + BigInt(b[t] || '0'), 0n);
+if (stableOf(bal) < 200000n && BigInt(bal.CELO) > 0n) {
+  const sw = await swapCeloIfFunded();
+  console.error('[mainnet-go] celo swap', JSON.stringify(sw));
+  if (sw.swapTx) appendFileSync('docs/MAINNET.md', `| ${new Date().toISOString().slice(0, 10)} | owner funded CELO, swapped to USDT (Uniswap v3 0.01%) | [${sw.swapTx.slice(0, 10)}…](https://celoscan.io/tx/${sw.swapTx}) |\n`);
+  bal = await balances(me, NETWORKS.celo);
+}
 const stable = ['USDC', 'USDT', 'USAT'].reduce((a, t) => a + BigInt(bal[t] || '0'), 0n);
 console.error('[mainnet-go] balances', JSON.stringify(bal));
 if (stable < 200000n) {
